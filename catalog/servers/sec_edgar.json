@@ -1,0 +1,69 @@
+{
+  "slug": "sec_edgar",
+  "name": "dev.mcpharbor.gateway/sec_edgar",
+  "version": "1.0.0",
+  "title": "SEC EDGAR",
+  "description": "SEC EDGAR filings: 10-K, 10-Q, financials, insider trades, institutional holdings",
+  "website_url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+  "repository": {
+    "url": "https://github.com/cyanheads/secedgar-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/secedgar-mcp-server@0.15.6"
+    ],
+    "env": {
+      "EDGAR_USER_AGENT": {
+        "from_env": "GATEWAY_CONTACT_UA"
+      }
+    }
+  },
+  "rate_limit": {
+    "requests": 500,
+    "window_ms": 60000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://www.sec.gov/os/accessing-edgar-data",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "unclear",
+    "key_required": "none",
+    "attribution": "Not required, but citing SEC.gov as source is encouraged",
+    "api_docs_url": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/secedgar-mcp-server@0.15.6",
+    "notes": "SEC fair access requires an identifying User-Agent with contact info, and caps 10 requests/second.",
+    "reasoning": "SEC states site/EDGAR content \"is considered public information and may be copied or further distributed... without the SEC's permission,\" needs no key, and only imposes a 10 req/s fair-access limit plus a User-Agent identification requirement — nothing bars a paid intermediary.",
+    "evidence": [
+      {
+        "url": "https://www.sec.gov/os/accessing-edgar-data",
+        "quote": "Current max request rate: 10 requests/second"
+      },
+      {
+        "url": "https://www.sec.gov/os/webmaster-faq",
+        "quote": "free to access and reuse"
+      },
+      {
+        "url": "https://www.sec.gov/os/accessing-edgar-data",
+        "quote": "declare your user agent in request headers"
+      }
+    ]
+  },
+  "keywords": [
+    "sec edgar",
+    "sec filings",
+    "10-K",
+    "10-Q",
+    "financial statements",
+    "insider trading",
+    "13F",
+    "institutional holdings",
+    "public companies"
+  ]
+}

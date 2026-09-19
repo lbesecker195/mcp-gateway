@@ -1,0 +1,64 @@
+{
+  "slug": "worldbank",
+  "name": "dev.mcpharbor.gateway/worldbank",
+  "version": "1.0.0",
+  "title": "World Bank",
+  "description": "World Bank development indicators: GDP, poverty, population, macroeconomic country data",
+  "website_url": "https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation",
+  "repository": {
+    "url": "https://github.com/cyanheads/worldbank-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/worldbank-mcp-server@0.3.7"
+    ],
+    "env": {}
+  },
+  "rate_limit": {
+    "requests": 500,
+    "window_ms": 60000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://data.worldbank.org/summary-terms-of-use",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "unclear",
+    "key_required": "none",
+    "attribution": "\"The World Bank: Dataset name: Data source (if known)\"; same acknowledgment must be passed to sub-licensees",
+    "api_docs_url": "https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/worldbank-mcp-server@0.3.7",
+    "notes": "CC BY 4.0. A subset of indicators sourced from third parties are marked non-redistributable.",
+    "reasoning": "World Bank data (CC BY 4.0) explicitly permits commercial use and redistribution with attribution, and the Indicators API needs no key. Caveat: a subset of indicators sourced from third parties are marked non-redistributable, so a gateway should exclude/flag those specific series.",
+    "evidence": [
+      {
+        "url": "https://data.worldbank.org/summary-terms-of-use",
+        "quote": "copy, distribute, adapt, display... for commercial or noncommercial purposes"
+      },
+      {
+        "url": "https://data.worldbank.org/summary-terms-of-use",
+        "quote": "provided by third parties, and may not be redistributed... without... consent"
+      },
+      {
+        "url": "https://datacatalog.worldbank.org/public-licenses",
+        "quote": "modify and distribute data in any format for any purpose, including commercial use"
+      }
+    ]
+  },
+  "keywords": [
+    "world bank",
+    "development indicators",
+    "gdp",
+    "poverty",
+    "population",
+    "macroeconomic",
+    "country data",
+    "economic data"
+  ]
+}

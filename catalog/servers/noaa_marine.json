@@ -1,0 +1,66 @@
+{
+  "slug": "noaa_marine",
+  "name": "dev.mcpharbor.gateway/noaa_marine",
+  "version": "1.0.0",
+  "title": "NOAA Tides & Currents",
+  "description": "NOAA tides and currents: tide predictions, water levels, sea level and marine buoy data",
+  "website_url": "https://api.tidesandcurrents.noaa.gov/api/prod/",
+  "repository": {
+    "url": "https://github.com/cyanheads/noaa-marine-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/noaa-marine-mcp-server@0.5.0"
+    ],
+    "env": {
+      "NOAA_APPLICATION_ID": "mcp-gateway"
+    }
+  },
+  "rate_limit": {
+    "requests": 300,
+    "window_ms": 60000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://tidesandcurrents.noaa.gov/disclaimers.html",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "yes",
+    "key_required": "none",
+    "attribution": "NOS requests attribution whenever its material is reproduced and re-disseminated; content must not be modified and presented as official government material; predictions are forecast guidance, not for navigation reliance. The optional 'application' parameter should identify the gateway.",
+    "api_docs_url": "https://api.tidesandcurrents.noaa.gov/api/prod/",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/noaa-marine-mcp-server@0.5.0",
+    "notes": "Predictions are forecast guidance and must not be relied on for navigation.",
+    "reasoning": "The CO-OPS disclaimer says information on government servers is in the public domain and 'may be used freely by the public', with only a request for attribution and a ban on presenting modified content as official. No key or agreement is needed; the API only throttles heavy load from a single customer (all gateway traffic would look like one customer), so add caching and set the application parameter.",
+    "evidence": [
+      {
+        "url": "https://tidesandcurrents.noaa.gov/disclaimers.html",
+        "quote": "may be used freely by the public"
+      },
+      {
+        "url": "https://tidesandcurrents.noaa.gov/disclaimers.html",
+        "quote": "NOS requests that attribution be given whenever NOS material is reproduced and re-disseminated"
+      },
+      {
+        "url": "https://api.tidesandcurrents.noaa.gov/api/prod/",
+        "quote": "limiting (throttling) the quantity / volume of data queries received from a singular customer"
+      }
+    ]
+  },
+  "keywords": [
+    "noaa",
+    "tides",
+    "tide predictions",
+    "water levels",
+    "sea level",
+    "marine buoy",
+    "currents",
+    "oceanography"
+  ]
+}

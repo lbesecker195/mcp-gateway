@@ -1,0 +1,68 @@
+{
+  "slug": "crossref",
+  "name": "dev.mcpharbor.gateway/crossref",
+  "version": "1.0.0",
+  "title": "Crossref",
+  "description": "Crossref DOI metadata: citations, journals, funders, bibliometric and scholarly lookups",
+  "website_url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/",
+  "repository": {
+    "url": "https://github.com/cyanheads/crossref-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/crossref-mcp-server@0.3.12"
+    ],
+    "env": {
+      "CROSSREF_MAILTO": {
+        "from_env": "GATEWAY_CONTACT_EMAIL"
+      }
+    }
+  },
+  "rate_limit": {
+    "requests": 50,
+    "window_ms": 60000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "unclear",
+    "key_required": "none",
+    "attribution": null,
+    "api_docs_url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/crossref-mcp-server@0.3.12",
+    "notes": "mailto joins the polite pool. Abstracts may carry third-party copyright.",
+    "reasoning": "Crossref explicitly states almost all metadata may be 'used for any purpose,' with no commercial prohibition, and offers a keyless/mailto-identified public/polite pool suitable for a proxy. Crossref does recommend a paid Metadata Plus subscription for production-scale services, so heavy call volumes could eventually require upgrading from the free pools; abstracts may carry third-party copyright.",
+    "evidence": [
+      {
+        "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/",
+        "quote": "almost none of the metadata is subject to copyright, and you may use it for any purpose"
+      },
+      {
+        "url": "https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/",
+        "quote": "Include your email address in the mailto parameter"
+      },
+      {
+        "url": "https://www.crossref.org/blog/announcing-changes-to-rest-api-rate-limits/",
+        "quote": "if you are relying on our metadata in a production service, Metadata Plus can provide more stability"
+      }
+    ]
+  },
+  "keywords": [
+    "crossref",
+    "doi",
+    "doi lookup",
+    "citations",
+    "journals",
+    "funders",
+    "scholarly metadata",
+    "bibliometrics"
+  ]
+}

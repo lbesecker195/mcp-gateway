@@ -1,0 +1,67 @@
+{
+  "slug": "usgs_quake",
+  "name": "dev.mcpharbor.gateway/usgs_quake",
+  "version": "1.0.0",
+  "title": "USGS Earthquakes",
+  "description": "USGS earthquake catalog: seismic events, magnitude, real-time feeds and hazard data",
+  "website_url": "https://earthquake.usgs.gov/fdsnws/event/1/",
+  "repository": {
+    "url": "https://github.com/cyanheads/earthquake-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/earthquake-mcp-server@0.3.5"
+    ],
+    "env": {}
+  },
+  "rate_limit": {
+    "requests": 600,
+    "window_ms": 60000
+  },
+  "exclude_tools": [
+    "earthquake_search",
+    "earthquake_count"
+  ],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "yes",
+    "key_required": "none",
+    "attribution": "Not legally required (public domain), but USGS asks that proper credit be given, e.g. 'Credit: U.S. Geological Survey, Department of the Interior/USGS'. Do not imply USGS endorsement.",
+    "api_docs_url": "https://earthquake.usgs.gov/fdsnws/event/1/",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/earthquake-mcp-server@0.3.5",
+    "notes": "search/count accept source=emsc, whose terms were not reviewed, and the source cannot be pinned yet. Excluded under default-deny; re-enable once argument pinning exists.",
+    "reasoning": "USGS states that USGS-authored data and information 'are considered to be in the U.S. Public Domain', and the API needs no key or agreement, so commercial relay is unrestricted apart from a courtesy credit request. The USGS docs publish only a 20,000-event query cap and advise automated apps to use the cached GeoJSON feeds; the EMSC option in the MCP server must be excluded because its terms were not reviewed.",
+    "evidence": [
+      {
+        "url": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+        "quote": "data and information are considered to be in the U.S. Public Domain"
+      },
+      {
+        "url": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+        "quote": "we ask that proper credit be given"
+      },
+      {
+        "url": "https://earthquake.usgs.gov/fdsnws/event/1/",
+        "quote": "The service limits queries to 20000"
+      }
+    ]
+  },
+  "keywords": [
+    "usgs",
+    "earthquake",
+    "seismic",
+    "magnitude",
+    "hazard",
+    "real-time feeds",
+    "geology",
+    "natural disasters"
+  ]
+}

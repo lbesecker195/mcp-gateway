@@ -1,0 +1,31 @@
+[Unit]
+Description=MCP Gateway (Phoenix release)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=exec
+User=mcp_gateway
+Group=mcp_gateway
+WorkingDirectory=/opt/mcp-gateway/current
+EnvironmentFile=/etc/mcp-gateway.env
+ExecStartPre=/opt/mcp-gateway/current/bin/migrate
+ExecStart=/opt/mcp-gateway/current/bin/server
+Restart=on-failure
+RestartSec=5
+
+# This service is unusual: it spawns a Node or Python subprocess per upstream MCP server,
+# and those children live in this cgroup. Seventeen upstreams at roughly 100 MB each is the
+# worst case, so the cap has to cover the BEAM plus its children or systemd will OOM-kill
+# the whole gateway. Shrink UPSTREAM_IDLE_TIMEOUT_MS before shrinking this.
+MemoryHigh=1500M
+MemoryMax=2000M
+TasksMax=512
+
+LimitNOFILE=65536
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,69 @@
+{
+  "slug": "bls",
+  "name": "dev.mcpharbor.gateway/bls",
+  "version": "1.0.0",
+  "title": "US Bureau of Labor Statistics",
+  "description": "US Bureau of Labor Statistics: unemployment, inflation, CPI, wages and employment series",
+  "website_url": "https://www.bls.gov/developers/",
+  "repository": {
+    "url": "https://github.com/cyanheads/bls-labor-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/bls-labor-mcp-server@0.5.1"
+    ],
+    "env": {
+      "BLS_API_KEY": {
+        "from_env": "BLS_API_KEY"
+      }
+    }
+  },
+  "rate_limit": {
+    "requests": 450,
+    "window_ms": 86400000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://www.bls.gov/developers/termsOfService.htm",
+    "checked_on": "2026-09-19",
+    "commercial_use": "unclear",
+    "proxy_or_resale": "unclear",
+    "key_required": "free_key",
+    "attribution": "\"BLS.gov cannot vouch for the data or analyses derived from these data after the data have been retrieved from BLS.gov\", plus cite BLS as source",
+    "api_docs_url": "https://www.bls.gov/developers/",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/bls-labor-mcp-server@0.5.1",
+    "notes": "Registered key gives 500 queries/day; the limit is daily, so the window is 24h.",
+    "reasoning": "BLS states its published data is public domain and free to use without specific permission, and its Terms of Service say end-use is not controlled; no clause restricts commercial resale or proxying, only citation/no-falsification requirements and a registration key for higher quota.",
+    "evidence": [
+      {
+        "url": "https://www.bls.gov/opub/copyright-information.htm",
+        "quote": "everything that we publish... is in the public domain"
+      },
+      {
+        "url": "https://www.bls.gov/opub/copyright-information.htm",
+        "quote": "free to use our public domain material without specific permission"
+      },
+      {
+        "url": "https://www.bls.gov/developers/termsOfService.htm",
+        "quote": "do not, and should not, include controls over its end use"
+      }
+    ]
+  },
+  "keywords": [
+    "bureau of labor statistics",
+    "bls",
+    "unemployment",
+    "inflation",
+    "consumer price index",
+    "cpi",
+    "wages",
+    "employment",
+    "economic data"
+  ]
+}

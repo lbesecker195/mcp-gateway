@@ -1,0 +1,63 @@
+{
+  "slug": "europepmc",
+  "name": "dev.mcpharbor.gateway/europepmc",
+  "version": "1.0.0",
+  "title": "Europe PMC",
+  "description": "Europe PMC life science literature, open access full text index and clinical trials",
+  "website_url": "https://europepmc.org/RestfulWebService",
+  "repository": {
+    "url": "https://github.com/JonasHeinickeBio/pyEuropePMC",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "uvx",
+    "args": [
+      "pyeuropepmc",
+      "mcp"
+    ],
+    "env": {}
+  },
+  "rate_limit": {
+    "requests": 500,
+    "window_ms": 60000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://europepmc.org/Copyright",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "yes",
+    "key_required": "none",
+    "attribution": null,
+    "api_docs_url": "https://europepmc.org/RestfulWebService",
+    "upstream_license": "MIT",
+    "upstream_package": "pypi:pyeuropepmc@3.0.0",
+    "notes": "EBI staff confirmed on the official developer forum that the API may be used in a commercial web service.",
+    "reasoning": "EBI/Europe PMC staff explicitly confirmed on the official developer forum that 'Europe PMC APIs can be used in a commercial web service' and that the API is free, directly matching our resale/proxy pattern. Individual full-text articles retrieved may still carry publisher/author copyright restrictions distinct from the metadata itself, so full-text redistribution should respect each article's stated license.",
+    "evidence": [
+      {
+        "url": "https://groups.google.com/a/ebi.ac.uk/g/epmc-webservices/c/cZLnV1JhCj8",
+        "quote": "Europe PMC APIs can be used in a commercial web service"
+      },
+      {
+        "url": "https://groups.google.com/a/ebi.ac.uk/g/epmc-webservices/c/cZLnV1JhCj8",
+        "quote": "The API is completely free to use"
+      },
+      {
+        "url": "https://www.ebi.ac.uk/about/terms-of-use/",
+        "quote": "EMBL-EBI places no additional restrictions on the use ... of the data"
+      }
+    ]
+  },
+  "keywords": [
+    "europe pmc",
+    "life sciences",
+    "open access",
+    "full text search",
+    "clinical trials",
+    "citations",
+    "biomedical literature"
+  ]
+}

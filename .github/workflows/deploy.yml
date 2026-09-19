@@ -1,0 +1,86 @@
+name: Deploy
+
+# Deploys only from main, and only after CI has passed on that same commit.
+# Manual runs are allowed so you can redeploy without a code change.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Never deploy a red build.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    # Point this at a GitHub Environment with a required reviewer if you want a human
+    # approving each production deploy.
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+
+      - name: Load SSH deploy key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST_IP: ${{ secrets.DEPLOY_HOST_IP }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOY_SSH_KEY"   || { echo "secret DEPLOY_SSH_KEY is not set"; exit 1; }
+          test -n "$DEPLOY_HOST_IP"   || { echo "secret DEPLOY_HOST_IP is not set"; exit 1; }
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          # Pin the host key rather than trusting on first use, so a hijacked DNS answer
+          # cannot receive this key.
+          if [ -n "${DEPLOY_KNOWN_HOSTS:-}" ]; then
+            printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -H "$DEPLOY_HOST_IP" >> ~/.ssh/known_hosts 2>/dev/null
+            echo "::warning::DEPLOY_KNOWN_HOSTS not set; used trust-on-first-use keyscan"
+          fi
+          chmod 600 ~/.ssh/known_hosts
+          cat >> ~/.ssh/config <<EOF
+          Host deploy-target
+            HostName $DEPLOY_HOST_IP
+            User ${{ secrets.DEPLOY_SSH_USER || 'root' }}
+            Port 22
+            IdentityFile ~/.ssh/id_deploy
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Deploy
+        env:
+          DEPLOY_HOST: deploy-target
+          DEPLOY_DOMAIN: gateway.mcpharbor.dev
+          DEPLOY_PORT: "4620"
+          # CI already ran the suite on this commit; re-running it here would need a
+          # database in this job for no extra signal.
+          SKIP_TESTS: "1"
+        run: ./deploy/deploy.sh
+
+      - name: Smoke test the public endpoint
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 10); do
+            if curl -fsS -m 8 https://gateway.mcpharbor.dev/health | grep -q '"status":"ok"'; then
+              echo "public health ok"; exit 0
+            fi
+            sleep 5
+          done
+          echo "public health check failed"; exit 1
+
+      - name: Clean up key
+        if: always()
+        run: rm -f ~/.ssh/id_deploy

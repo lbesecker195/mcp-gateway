@@ -1,0 +1,68 @@
+{
+  "slug": "frankfurter",
+  "name": "dev.mcpharbor.gateway/frankfurter",
+  "version": "1.0.0",
+  "title": "Frankfurter (ECB rates)",
+  "description": "Currency conversion and exchange rates from European Central Bank reference data",
+  "website_url": "https://frankfurter.dev/",
+  "repository": {
+    "url": "https://github.com/anirbanbasu/frankfurtermcp",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "uvx",
+    "args": [
+      "frankfurtermcp==0.5.0"
+    ],
+    "env": {}
+  },
+  "rate_limit": {
+    "requests": 300,
+    "window_ms": 60000
+  },
+  "exclude_tools": [
+    "greet"
+  ],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://frankfurter.dev/",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "unclear",
+    "key_required": "none",
+    "attribution": "None required by Frankfurter itself; underlying ECB source requires citing ECB as source and, if resold, telling buyers the data is free elsewhere.",
+    "api_docs_url": "https://frankfurter.dev/",
+    "upstream_license": "MIT",
+    "upstream_package": "pypi:frankfurtermcp@0.5.0",
+    "notes": "ECB source requires citing ECB and, if resold, telling buyers the data is free elsewhere.",
+    "reasoning": "Frankfurter's own FAQ explicitly says commercial use is free with no key and no quotas, and the underlying ECB source permits free reuse subject only to accurate citation and a notice-to-buyers clause if resold — both compatible with a paid proxy. No clause forbids intermediary/proxy use.",
+    "evidence": [
+      {
+        "url": "https://frankfurter.dev/",
+        "quote": "Yes, absolutely. See each provider's terms for details"
+      },
+      {
+        "url": "https://frankfurter.dev/",
+        "quote": "There are no quotas... no monthly or daily caps"
+      },
+      {
+        "url": "https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html",
+        "quote": "users of this website may make free use of the information"
+      },
+      {
+        "url": "https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html",
+        "quote": "the ECB must be cited as the source"
+      }
+    ]
+  },
+  "keywords": [
+    "currency conversion",
+    "exchange rates",
+    "forex",
+    "european central bank",
+    "ecb",
+    "fx rates",
+    "historical rates"
+  ]
+}

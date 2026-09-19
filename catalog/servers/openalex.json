@@ -1,0 +1,69 @@
+{
+  "slug": "openalex",
+  "name": "dev.mcpharbor.gateway/openalex",
+  "version": "1.0.0",
+  "title": "OpenAlex",
+  "description": "OpenAlex scholarly graph: works, authors, institutions, citations, bibliometric analysis",
+  "website_url": "https://help.openalex.org/",
+  "repository": {
+    "url": "https://github.com/cyanheads/openalex-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/openalex-mcp-server@0.7.14"
+    ],
+    "env": {
+      "OPENALEX_API_KEY": {
+        "from_env": "OPENALEX_API_KEY"
+      }
+    }
+  },
+  "rate_limit": {
+    "requests": 600,
+    "window_ms": 60000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://openalex.org/OpenAlex_termsofservice.pdf",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "yes",
+    "key_required": "free_key",
+    "attribution": "Appreciated but not required (CC0)",
+    "api_docs_url": "https://help.openalex.org/",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/openalex-mcp-server@0.7.14",
+    "notes": "Usage-metered: 100,000 credits/day with a free key.",
+    "reasoning": "OpenAlex's underlying data is CC0 public domain with no personal-use restriction, and the paid/free-tier API pricing model is explicitly usage-based rather than a prohibition on commercial or intermediary use. A shared API key works for our proxy pattern, though heavy volume will draw down the daily credit allowance and may require a paid plan.",
+    "evidence": [
+      {
+        "url": "https://help.openalex.org/access/pricing/",
+        "quote": "released under a CC0 public-domain license with no 'personal use only' carve-out"
+      },
+      {
+        "url": "https://github.com/ourresearch/openalex-docs/blob/main/license.md",
+        "quote": "OpenAlex data is made available under the CC0 license"
+      },
+      {
+        "url": "https://groups.google.com/g/openalex-users/c/rI1GIAySpVQ",
+        "quote": "Our underlying data remains CC0 and free to download in its entirety any time"
+      }
+    ]
+  },
+  "keywords": [
+    "openalex",
+    "scholarly graph",
+    "bibliometrics",
+    "citations",
+    "research metrics",
+    "authors",
+    "institutions",
+    "open access",
+    "academic search"
+  ]
+}

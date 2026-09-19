@@ -1,0 +1,67 @@
+{
+  "slug": "nws",
+  "name": "dev.mcpharbor.gateway/nws",
+  "version": "1.0.0",
+  "title": "US National Weather Service",
+  "description": "US National Weather Service forecasts, severe weather alerts and station observations",
+  "website_url": "https://www.weather.gov/documentation/services-web-api",
+  "repository": {
+    "url": "https://github.com/cyanheads/nws-weather-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/nws-weather-mcp-server@0.9.3"
+    ],
+    "env": {
+      "NWS_USER_AGENT": {
+        "from_env": "GATEWAY_CONTACT_UA"
+      }
+    }
+  },
+  "rate_limit": {
+    "requests": 300,
+    "window_ms": 60000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://www.weather.gov/disclaimer",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "yes",
+    "key_required": "none",
+    "attribution": "No attribution required. Must not claim the content as your own, imply NOAA/NWS endorsement, or modify content and present it as official government material. Third parties producing copyrighted works predominantly of NWS material must add a notice identifying the NWS material as not subject to copyright. A User-Agent identifying the app (ideally with contact info) is required on every request.",
+    "api_docs_url": "https://www.weather.gov/documentation/services-web-api",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/nws-weather-mcp-server@0.9.3",
+    "notes": "Rate limit is unpublished and NWS warns proxies hit it sooner than direct clients.",
+    "reasoning": "The NWS disclaimer says its information is public domain and 'may be used without charge for any lawful purpose' (subject only to no false ownership claim, no implied endorsement, no altered-as-official), and the API page calls the data 'open data, free to use for any purpose'. No key or per-user agreement is required, only an identifying User-Agent, so a paid per-call relay fits; the practical risk is the unpublished rate limit, which NWS says proxies are more likely to reach.",
+    "evidence": [
+      {
+        "url": "https://www.weather.gov/disclaimer",
+        "quote": "may be used without charge for any lawful purpose"
+      },
+      {
+        "url": "https://www.weather.gov/documentation/services-web-api",
+        "quote": "open data, free to use for any purpose"
+      },
+      {
+        "url": "https://www.weather.gov/documentation/services-web-api",
+        "quote": "Proxies are more likely to reach the limit"
+      }
+    ]
+  },
+  "keywords": [
+    "national weather service",
+    "weather forecast",
+    "weather alerts",
+    "severe weather",
+    "nws",
+    "observations",
+    "us weather"
+  ]
+}

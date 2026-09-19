@@ -1,0 +1,67 @@
+{
+  "slug": "nasa",
+  "name": "dev.mcpharbor.gateway/nasa",
+  "version": "1.0.0",
+  "title": "NASA Open APIs",
+  "description": "NASA astronomy picture of the day and near-earth asteroid tracking from NeoWs",
+  "website_url": "https://api.nasa.gov/",
+  "repository": {
+    "url": "https://github.com/ProgramComputer/NASA-MCP-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@programcomputer/nasa-mcp-server@1.0.14"
+    ],
+    "env": {
+      "NASA_API_KEY": {
+        "from_env": "NASA_API_KEY"
+      }
+    }
+  },
+  "rate_limit": {
+    "requests": 900,
+    "window_ms": 3600000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://api.nasa.gov/",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "unclear",
+    "key_required": "free_key",
+    "attribution": "NASA should be acknowledged as the source of the material",
+    "api_docs_url": "https://api.nasa.gov/",
+    "upstream_license": "ISC",
+    "upstream_package": "npm:@programcomputer/nasa-mcp-server@1.0.14",
+    "notes": "Some APOD images are third-party copyrighted (see the copyright field) and are not public domain.",
+    "reasoning": "NASA-produced content and open science data are generally public domain and usable for any purpose including commercial, and api.nasa.gov issues free registered keys meant for third-party developer use, fitting a shared-key gateway. Caveat: some APOD images are third-party copyrighted (marked in the 'copyright' field) and must not be redistributed commercially without the photographer's permission, so the gateway should surface/respect that field rather than assume every image is public domain.",
+    "evidence": [
+      {
+        "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+        "quote": "NASA content ... generally are not subject to copyright in the United States"
+      },
+      {
+        "url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+        "quote": "must not explicitly or implicitly convey NASA's endorsement of commercial goods or services"
+      },
+      {
+        "url": "https://apod.nasa.gov/apod/lib/about_apod.html",
+        "quote": "Some of the images are copyrighted and to use these pictures ... one must write to the owners"
+      }
+    ]
+  },
+  "keywords": [
+    "nasa",
+    "astronomy",
+    "apod",
+    "asteroid",
+    "near-earth objects",
+    "space",
+    "planetary science"
+  ]
+}

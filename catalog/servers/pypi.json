@@ -1,0 +1,61 @@
+{
+  "slug": "pypi",
+  "name": "dev.mcpharbor.gateway/pypi",
+  "version": "1.0.0",
+  "title": "PyPI",
+  "description": "PyPI Python package registry search: versions, dependencies, downloads, compatibility",
+  "website_url": "https://docs.pypi.org/api/json/",
+  "repository": {
+    "url": "https://github.com/loonghao/pypi-query-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "uvx",
+    "args": [
+      "pypi-query-mcp-server==0.6.5"
+    ],
+    "env": {}
+  },
+  "rate_limit": {
+    "requests": 600,
+    "window_ms": 60000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://policies.python.org/pypi.org/Terms-of-Service/",
+    "checked_on": "2026-09-19",
+    "commercial_use": "unclear",
+    "proxy_or_resale": "unclear",
+    "key_required": "none",
+    "attribution": null,
+    "api_docs_url": "https://docs.pypi.org/api/json/",
+    "upstream_license": "MIT",
+    "upstream_package": "pypi:pypi-query-mcp-server@0.6.5",
+    "notes": "Keyless JSON API, heavily CDN-cached.",
+    "reasoning": "The JSON API is unauthenticated (no token to share), is explicitly documented as unrate-limited at the edge, and PyPI's Terms of Service only bar excessive/abusive request volume and API-token sharing (not applicable to a keyless metadata endpoint) or using the API to scrape user PII for spam. Ordinary package-metadata lookups on behalf of many end users fit the intended low-friction, keyless public-API use case.",
+    "evidence": [
+      {
+        "url": "https://docs.pypi.org/api/",
+        "quote": "there is currently no rate limiting of PyPI APIs at the edge"
+      },
+      {
+        "url": "https://policies.python.org/pypi.org/Terms-of-Service/",
+        "quote": "Abuse or excessively frequent requests to PyPI via the API may result in... suspension"
+      },
+      {
+        "url": "https://policies.python.org/pypi.org/Terms-of-Service/",
+        "quote": "You may not share API tokens to exceed PyPI's rate limitations"
+      }
+    ]
+  },
+  "keywords": [
+    "pypi",
+    "python",
+    "package registry",
+    "dependencies",
+    "package versions",
+    "downloads"
+  ]
+}

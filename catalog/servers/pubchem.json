@@ -1,0 +1,65 @@
+{
+  "slug": "pubchem",
+  "name": "dev.mcpharbor.gateway/pubchem",
+  "version": "1.0.0",
+  "title": "PubChem",
+  "description": "PubChem chemistry: compound properties, molecule structures, SMILES, safety, bioassays",
+  "website_url": "https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest",
+  "repository": {
+    "url": "https://github.com/cyanheads/pubchem-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/pubchem-mcp-server@0.6.3"
+    ],
+    "env": {}
+  },
+  "rate_limit": {
+    "requests": 350,
+    "window_ms": 60000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "unclear",
+    "key_required": "none",
+    "attribution": "Attribution to source recommended, not mandatory",
+    "api_docs_url": "https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/pubchem-mcp-server@0.6.3",
+    "notes": "5 requests/second and 400/minute, dynamically throttled under load.",
+    "reasoning": "PubChem is an NIH/NCBI public resource provided free of charge with no restriction on use or distribution of the aggregated data, matching a commercial-proxy pattern; NCBI's general policy only asks that redistributors of any copyrighted third-party-submitted records (e.g. certain vendor safety data) respect the original submitter's terms. Compliance requires observing the documented 5 req/s dynamic throttling limits.",
+    "evidence": [
+      {
+        "url": "https://academic.oup.com/nar/article/46/W1/W563/4990016",
+        "quote": "All PubChem data, tools, and services ... are provided to the public free of charge"
+      },
+      {
+        "url": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+        "quote": "NCBI itself places no restrictions on the use or distribution of the data"
+      },
+      {
+        "url": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+        "quote": "some submitters of the original data ... may claim patent, copyright"
+      }
+    ]
+  },
+  "keywords": [
+    "pubchem",
+    "chemistry",
+    "chemical compounds",
+    "molecule",
+    "smiles",
+    "drug discovery",
+    "bioassay",
+    "safety data",
+    "cheminformatics"
+  ]
+}

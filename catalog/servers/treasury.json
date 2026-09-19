@@ -1,0 +1,59 @@
+{
+  "slug": "treasury",
+  "name": "dev.mcpharbor.gateway/treasury",
+  "version": "1.0.0",
+  "title": "US Treasury FiscalData",
+  "description": "US Treasury fiscal data: national debt, interest rates, exchange rates, daily statements",
+  "website_url": "https://fiscaldata.treasury.gov/api-documentation/",
+  "repository": {
+    "url": "https://github.com/cyanheads/treasury-fiscaldata-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/treasury-fiscaldata-mcp-server@0.1.10"
+    ],
+    "env": {}
+  },
+  "rate_limit": {
+    "requests": 300,
+    "window_ms": 60000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://fiscaldata.treasury.gov/api-documentation/",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "unclear",
+    "key_required": "none",
+    "attribution": "Not stated as required",
+    "api_docs_url": "https://fiscaldata.treasury.gov/api-documentation/",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/treasury-fiscaldata-mcp-server@0.1.10",
+    "notes": "Explicitly free for commercial use, no key, no registration.",
+    "reasoning": "Treasury explicitly states its Fiscal Data is \"offered free, without restriction, and available to copy, adapt, redistribute, or otherwise use for non-commercial or commercial purposes,\" with no key required and no proxy/resale prohibition found.",
+    "evidence": [
+      {
+        "url": "https://fiscaldata.treasury.gov/api-documentation/",
+        "quote": "offered free, without restriction... non-commercial or commercial purposes"
+      },
+      {
+        "url": "https://fiscaldata.treasury.gov/api-documentation/",
+        "quote": "does not require a user account or registration"
+      }
+    ]
+  },
+  "keywords": [
+    "us treasury",
+    "fiscal data",
+    "national debt",
+    "interest rates",
+    "government data",
+    "public debt",
+    "exchange rates"
+  ]
+}

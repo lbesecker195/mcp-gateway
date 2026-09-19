@@ -1,0 +1,73 @@
+{
+  "slug": "pubmed",
+  "name": "dev.mcpharbor.gateway/pubmed",
+  "version": "1.0.0",
+  "title": "PubMed",
+  "description": "PubMed biomedical literature search: MeSH terms, citations, abstracts, clinical research",
+  "website_url": "https://www.ncbi.nlm.nih.gov/books/NBK25497/",
+  "repository": {
+    "url": "https://github.com/cyanheads/pubmed-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/pubmed-mcp-server@2.10.14"
+    ],
+    "env": {
+      "NCBI_API_KEY": {
+        "from_env": "NCBI_API_KEY"
+      },
+      "NCBI_ADMIN_EMAIL": {
+        "from_env": "GATEWAY_CONTACT_EMAIL"
+      }
+    }
+  },
+  "rate_limit": {
+    "requests": 150,
+    "window_ms": 60000
+  },
+  "exclude_tools": [
+    "pubmed_fetch_fulltext"
+  ],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://www.ncbi.nlm.nih.gov/books/NBK25497/",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "yes",
+    "key_required": "free_key",
+    "attribution": "NCBI's Disclaimer and Copyright notice must be evident to users of your product",
+    "api_docs_url": "https://www.ncbi.nlm.nih.gov/books/NBK25497/",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/pubmed-mcp-server@2.10.14",
+    "notes": "NCBI's disclaimer and copyright notice must be shown to end users. Full-text fetch is excluded because article full text carries publisher copyright separate from the metadata.",
+    "reasoning": "NCBI states it places no restrictions on use or distribution of E-utilities data, and the service is free with only a registered API key needed for higher throughput -- a pattern compatible with a shared-key commercial proxy. Obligations: register the tool/email identifiers with NCBI, display NCBI's disclaimer/copyright notice to end users, and respect the documented request-rate and off-peak bulk-job guidance.",
+    "evidence": [
+      {
+        "url": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+        "quote": "NCBI itself places no restrictions on the use or distribution of the data"
+      },
+      {
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK25497/",
+        "quote": "NCBI's Disclaimer and Copyright notice must be evident to users of your product"
+      },
+      {
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK25497/",
+        "quote": "these values must be registered with NCBI"
+      }
+    ]
+  },
+  "keywords": [
+    "pubmed",
+    "biomedical literature",
+    "medical research",
+    "mesh terms",
+    "citations",
+    "ncbi",
+    "clinical research",
+    "life sciences"
+  ]
+}

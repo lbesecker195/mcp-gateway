@@ -1,0 +1,72 @@
+{
+  "slug": "arxiv",
+  "name": "dev.mcpharbor.gateway/arxiv",
+  "version": "1.0.0",
+  "title": "arXiv",
+  "description": "Search arXiv preprints and open access scholarly papers: abstracts, authors, categories",
+  "website_url": "https://info.arxiv.org/help/api/index.html",
+  "repository": {
+    "url": "https://github.com/cyanheads/arxiv-mcp-server",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@cyanheads/arxiv-mcp-server@1.5.3"
+    ],
+    "env": {}
+  },
+  "rate_limit": {
+    "requests": 20,
+    "window_ms": 60000
+  },
+  "exclude_tools": [
+    "arxiv_read_paper"
+  ],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://info.arxiv.org/help/api/tou.html",
+    "checked_on": "2026-09-19",
+    "commercial_use": "unclear",
+    "proxy_or_resale": "yes",
+    "key_required": "none",
+    "attribution": "Thank you to arXiv for use of its open access interoperability. (requested, not required)",
+    "api_docs_url": "https://info.arxiv.org/help/api/index.html",
+    "upstream_license": "Apache-2.0",
+    "upstream_package": "npm:@cyanheads/arxiv-mcp-server@1.5.3",
+    "notes": "ToU permits discovery tools but forbids storing or serving e-print full text from our servers, so the full-text tool is excluded. Rate limit is 1 request per 3 seconds.",
+    "reasoning": "Metadata is CC0 public domain and the ToU explicitly permits building 'tools and services' that help users discover e-prints -- a direct match for a discovery-oriented gateway. Caution: e-print/PDF content itself may not be stored and re-served from our own servers without permission, so only metadata/search tools should be exposed, not a full-text mirror.",
+    "evidence": [
+      {
+        "url": "https://info.arxiv.org/help/api/tou.html",
+        "quote": "Provide tools and services to users that helps them ... discover ... e-prints"
+      },
+      {
+        "url": "https://info.arxiv.org/help/api/tou.html",
+        "quote": "free to use descriptive metadata ... under Creative Commons ... (CC0 1.0)"
+      },
+      {
+        "url": "https://info.arxiv.org/help/api/tou.html",
+        "quote": "Store and serve arXiv e-prints ... from your servers, unless you have permission"
+      },
+      {
+        "url": "https://info.arxiv.org/help/api/index.html",
+        "quote": "Commercial projects that utilize arXiv's APIs should review relevant documentation first"
+      }
+    ]
+  },
+  "keywords": [
+    "arxiv",
+    "preprints",
+    "open access",
+    "scholarly articles",
+    "research papers",
+    "physics",
+    "computer science",
+    "mathematics",
+    "academic search",
+    "citations"
+  ]
+}

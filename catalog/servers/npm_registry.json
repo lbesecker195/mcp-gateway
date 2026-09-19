@@ -1,0 +1,63 @@
+{
+  "slug": "npm_registry",
+  "name": "dev.mcpharbor.gateway/npm_registry",
+  "version": "1.0.0",
+  "title": "npm Registry",
+  "description": "Search the npm package registry: versions, dependencies, download stats and metadata",
+  "website_url": "https://github.com/npm/registry/blob/main/docs/REGISTRY-API.md",
+  "repository": {
+    "url": "https://github.com/ofershap/mcp-server-npm",
+    "source": "github"
+  },
+  "upstream": {
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "mcp-server-npm-search@1.0.1"
+    ],
+    "env": {}
+  },
+  "rate_limit": {
+    "requests": 1000,
+    "window_ms": 60000
+  },
+  "exclude_tools": [],
+  "compliance": {
+    "verdict": "allowed",
+    "terms_url": "https://docs.npmjs.com/policies/open-source-terms",
+    "checked_on": "2026-09-19",
+    "commercial_use": "yes",
+    "proxy_or_resale": "unclear",
+    "key_required": "none",
+    "attribution": null,
+    "api_docs_url": "https://github.com/npm/registry/blob/main/docs/REGISTRY-API.md",
+    "upstream_license": "MIT",
+    "upstream_package": "npm:mcp-server-npm-search@1.0.1",
+    "notes": "Under npm's 5,000,000 requests/month ceiling.",
+    "reasoning": "npm's Open Source Terms explicitly permit replicating registry data via the documented Public APIs and place no blanket ban on commercial use of ordinary package metadata (only a narrower restriction applies to redistributing Package security/vulnerability data). As long as request volume stays well under the stated 5-million-requests/month ceiling and infrastructure isn't strained, a metered lookup proxy fits within the permitted pattern.",
+    "evidence": [
+      {
+        "url": "https://docs.npmjs.com/policies/open-source-terms",
+        "quote": "You may replicate data from the Public Registry using the Public APIs"
+      },
+      {
+        "url": "https://docs.npmjs.com/policies/open-source-terms",
+        "quote": "five million requests... in a single month-long period... remotely reasonable"
+      },
+      {
+        "url": "https://docs.npmjs.com/policies/open-source-terms",
+        "quote": "npm data about the security of Packages, only for your own... business purposes"
+      }
+    ]
+  },
+  "keywords": [
+    "npm",
+    "package registry",
+    "javascript",
+    "node",
+    "dependencies",
+    "package versions",
+    "downloads"
+  ]
+}
