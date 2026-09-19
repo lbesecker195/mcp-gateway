@@ -64,6 +64,12 @@ jobs:
       - name: Tests
         run: mix test
 
+      # `registry.export` renders from the catalog table, so the files have to be imported
+      # first. --offline skips probing upstreams, keeping CI free of network calls, and
+      # importing on every build exercises the sync path against an empty schema.
+      - name: Import catalog
+        run: mix catalog.sync --offline
+
       # Catches a catalog entry the official registry would reject (over-long description,
       # floating @latest version, non-https remote) before it can reach a deploy.
       - name: Validate catalog for registry publishing
