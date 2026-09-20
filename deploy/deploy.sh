@@ -50,7 +50,13 @@ done
 
 say() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 die() { printf '\033[31mERROR: %s\033[0m\n' "$*" >&2; exit 1; }
-remote() { ssh -o BatchMode=yes -o ConnectTimeout=10 "$HOST" "$@"; }
+# ServerAlive* is load-bearing: the catalog sync launches an npx or uvx probe per upstream
+# and can hold a silent connection for minutes, which an idle reaper will otherwise kill
+# mid-deploy (seen in CI as "client_loop: send disconnect: Broken pipe", exit 255).
+remote() {
+  ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=40 \
+    "$HOST" "$@"
+}
 
 cd "$SCRIPT_DIR/.."
 [ -f mix.exs ] || die "run this from the project (mix.exs not found)"
@@ -255,7 +261,10 @@ fi
 echo "  health: ok on 127.0.0.1:$PORT"
 
 say "Catalog sync"
-remote bash -euo pipefail -s <<'SYNC_EOF'
+# The release is already verified healthy above. Syncing the catalog is a post-deploy
+# refresh, so a failure here reports itself and leaves the running release alone rather
+# than failing a deploy that already succeeded.
+if ! remote bash -euo pipefail -s <<'SYNC_EOF'
   set +e
   # `rpc` runs inside the already-running node. `eval` would boot a second copy of the app
   # and fight the live one for the port.
@@ -269,6 +278,10 @@ remote bash -euo pipefail -s <<'SYNC_EOF'
     end' 2>&1 | tail -22 | sed 's/^/  /'
   exit 0
 SYNC_EOF
+then
+  echo "  catalog sync did not complete; the deployed release is unaffected."
+  echo "  re-run it with: ssh \"$HOST\" /opt/mcp-gateway/current/bin/mcp_gateway rpc 'McpGateway.Catalog.Sync.sync_all([])'"
+fi
 
 say "Pruning old releases (keeping $KEEP_RELEASES)"
 remote KEEP="$KEEP_RELEASES" bash -euo pipefail -s <<'PRUNE_EOF'
