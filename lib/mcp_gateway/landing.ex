@@ -25,7 +25,7 @@ defmodule McpGateway.Landing do
 
   @doc "The landing page, as a complete HTML document."
   def html do
-    servers = Catalog.list_servers_with_tools()
+    servers = Catalog.list_servers_by_capacity()
     tools = servers |> Enum.map(&length(&1.tools)) |> Enum.sum()
     base = Settings.canonical_base_url()
     price = Billing.format_usd(Settings.price_micro_usd())
@@ -53,10 +53,11 @@ defmodule McpGateway.Landing do
     <main>
     #{hero(servers, tools, price)}
     #{what_is_section()}
+    #{trial_section()}
     #{pricing_section(price)}
     #{connect_section(base)}
     #{catalog_section(servers, base)}
-    #{compliance_section(base)}
+    #{compliance_section()}
     #{agents_section(base)}
     </main>
     #{footer(base)}
@@ -132,8 +133,8 @@ defmodule McpGateway.Landing do
       <p class="lede">One <strong>Model Context Protocol</strong> endpoint for
       #{tools} tools across #{length(servers)} MCP servers &mdash; public data APIs for research,
       finance, weather and software, billed at <strong>$#{price} per tool call</strong>.</p>
-      <p class="cta"><a class="btn" href="/agent.txt">Connect an agent</a>
-      <a class="btn secondary" href="/v0.1/servers">Browse the catalog API</a></p>
+      <p class="cta"><a class="btn" href="/try">Try it now</a>
+      <a class="btn secondary" href="/agent.txt">Connect an agent</a></p>
       <dl class="stats">
         <div><dt>Tools</dt><dd>#{tools}</dd></div>
         <div><dt>MCP servers</dt><dd>#{length(servers)}</dd></div>
@@ -163,6 +164,42 @@ defmodule McpGateway.Landing do
       it, so nothing here is served in breach of the upstream's rules.</p>
     </section>
     """
+  end
+
+  defp trial_markup do
+    """
+    <section id="free-trial">
+      <h2>Free trial</h2>
+      <p>New accounts get <strong>$__CREDIT__ of free credit</strong> &mdash; __CALLS__ tool calls
+      &mdash; with no card and no subscription. One command gets you a key:</p>
+      <pre><code>curl -X POST __BASE__/v1/signup</code></pre>
+      <p>Or <a href="/try">run a call in your browser</a> first; that one is on us.</p>
+    </section>
+
+    """
+  end
+
+  defp trial_section do
+    credit = Settings.trial_credit_micro_usd()
+
+    if credit > 0 do
+      calls = credit |> div(Settings.price_micro_usd()) |> delimit()
+
+      trial_markup()
+      |> String.replace("__CREDIT__", Billing.format_usd(credit))
+      |> String.replace("__CALLS__", calls)
+      |> String.replace("__BASE__", Settings.canonical_base_url())
+    else
+      ""
+    end
+  end
+
+  defp delimit(n) do
+    n
+    |> Integer.to_string()
+    |> String.reverse()
+    |> String.replace(~r/(\d{3})(?=\d)/, "\\1,")
+    |> String.reverse()
   end
 
   defp pricing_section(price) do
@@ -227,7 +264,8 @@ defmodule McpGateway.Landing do
       <h2>MCP servers in this gateway</h2>
       <p>Every entry below is live right now. The list is generated from the catalog on each
       request, so a provider that has been delisted disappears from this page at the same moment
-      it stops being routable.</p>
+      it stops being routable. Providers are ordered by the headroom their terms give us, so the
+      ones at the top are the ones to lean on.</p>
       <ul class="catalog">
       #{rows}
       </ul>
@@ -238,7 +276,7 @@ defmodule McpGateway.Landing do
     """
   end
 
-  defp compliance_section(base) do
+  defp compliance_section do
     """
     <section id="compliance">
       <h2>Every provider's terms are checked first</h2>
@@ -252,8 +290,9 @@ defmodule McpGateway.Landing do
       decisive clauses, and a verdict that goes stale is delisted automatically rather than being
       served on an assumption.</p>
       <p>The verdict for every provider we evaluated, including the ones we rejected and why, is
-      published in <a href="#{base}/docs/servers/arxiv">the per-server documentation</a> and in the
-      project's compliance record.</p>
+      published on each provider's page above and in the project's
+      <a href="https://github.com/lbesecker195/mcp-gateway/blob/main/catalog/COMPLIANCE.md">compliance
+      record</a>.</p>
     </section>
     """
   end

@@ -31,6 +31,14 @@ defmodule McpGatewayWeb.Router do
 
   # Read-only MCP Registry API. Publishing is deliberately not exposed: entries enter the
   # catalog only through the compliance gate.
+  # Free trial and the public demo. Both spend real credit and are rate limited per address.
+  scope "/", McpGatewayWeb do
+    pipe_through :registry
+
+    post "/v1/signup", TrialController, :signup
+    post "/try/call", TrialController, :try_call
+  end
+
   scope "/v0.1", McpGatewayWeb do
     pipe_through :registry
 
@@ -44,6 +52,7 @@ defmodule McpGatewayWeb.Router do
 
     # The landing page: what an MCP gateway is, what this one costs, and what is in it.
     get "/", DocsController, :index
+    get "/try", DocsController, :try_page
     get "/sitemap.xml", DocsController, :sitemap
     get "/robots.txt", DocsController, :robots
     get "/llms.txt", DocsController, :llms

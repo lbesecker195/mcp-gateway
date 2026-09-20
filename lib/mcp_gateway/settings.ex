@@ -6,6 +6,9 @@ defmodule McpGateway.Settings do
   @doc "Price of one successful tool call in integer micro-USD (100 = $0.0001)."
   def price_micro_usd, do: Application.fetch_env!(:mcp_gateway, :price_micro_usd)
 
+  @doc "Free trial credit in micro-USD, granted once per account. 0 disables the trial."
+  def trial_credit_micro_usd, do: Application.fetch_env!(:mcp_gateway, :trial_credit_micro_usd)
+
   @doc "Reverse-DNS namespace for server names, e.g. `dev.mcpharbor.gateway/arxiv`."
   def registry_namespace, do: Application.fetch_env!(:mcp_gateway, :registry_namespace)
 
