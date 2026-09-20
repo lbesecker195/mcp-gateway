@@ -23,6 +23,11 @@ defmodule McpGateway.Billing do
 
   def get_account(id), do: Repo.get(Account, id)
 
+  @doc "Finds an account by its name. Names are not unique in general; this takes the oldest."
+  def get_account_by_name(name) when is_binary(name) do
+    Repo.one(from a in Account, where: a.name == ^name, order_by: [asc: a.inserted_at], limit: 1)
+  end
+
   @doc """
   Creates an API key for the account. The plaintext key is returned once and never stored;
   only its SHA-256 hash is kept.
@@ -95,6 +100,30 @@ defmodule McpGateway.Billing do
   end
 
   @doc """
+  Grants the one-off free trial credit, and returns `{:error, :already_granted}` on a second
+  attempt for the same account.
+
+  The idempotency key is the account id rather than a payment reference, which is what makes
+  "once per account" a property of the ledger rather than of the code that calls this. A retried
+  signup, a double-clicked button or a replayed request all land on the same row.
+  """
+  def grant_trial(account_id) do
+    amount = McpGateway.Settings.trial_credit_micro_usd()
+
+    if amount > 0 do
+      case apply_entry_with_status(account_id, "topup", amount, "trial:" <> account_id, %{
+             "reason" => "free_trial"
+           }) do
+        {:ok, :created, entry} -> {:ok, entry}
+        {:ok, :existing, _entry} -> {:error, :already_granted}
+        {:error, reason} -> {:error, reason}
+      end
+    else
+      {:error, :trial_disabled}
+    end
+  end
+
+  @doc """
   Adds credit. `ref` identifies the payment (e.g. a checkout session id); crediting the same
   `ref` twice is a no-op that returns the original entry.
   """
@@ -132,41 +161,55 @@ defmodule McpGateway.Billing do
   defp apply_entry(account_id, kind, delta, idempotency_key, metadata) do
     result =
       Repo.transaction(fn ->
-        account =
-          Repo.one!(from a in Account, where: a.id == ^account_id, lock: "FOR UPDATE")
-
-        case Repo.get_by(LedgerEntry, idempotency_key: idempotency_key) do
-          %LedgerEntry{} = existing ->
-            existing
-
-          nil ->
-            new_balance = account.balance_micro_usd + delta
-            if new_balance < 0, do: Repo.rollback(:insufficient_funds)
-
-            entry =
-              Repo.insert!(%LedgerEntry{
-                account_id: account_id,
-                kind: kind,
-                amount_micro_usd: delta,
-                balance_after_micro_usd: new_balance,
-                idempotency_key: idempotency_key,
-                metadata: metadata
-              })
-
-            from(a in Account, where: a.id == ^account_id)
-            |> Repo.update_all(
-              set: [
-                balance_micro_usd: new_balance,
-                updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
-              ]
-            )
-
-            entry
-        end
+        apply_entry_txn(account_id, kind, delta, idempotency_key, metadata)
       end)
 
     case result do
-      {:ok, entry} -> {:ok, entry}
+      {:ok, {_status, entry}} -> {:ok, entry}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp apply_entry_txn(account_id, kind, delta, idempotency_key, metadata) do
+    account = Repo.one!(from a in Account, where: a.id == ^account_id, lock: "FOR UPDATE")
+
+    case Repo.get_by(LedgerEntry, idempotency_key: idempotency_key) do
+      %LedgerEntry{} = existing ->
+        {:existing, existing}
+
+      nil ->
+        new_balance = account.balance_micro_usd + delta
+        if new_balance < 0, do: Repo.rollback(:insufficient_funds)
+
+        entry =
+          Repo.insert!(%LedgerEntry{
+            account_id: account_id,
+            kind: kind,
+            amount_micro_usd: delta,
+            balance_after_micro_usd: new_balance,
+            idempotency_key: idempotency_key,
+            metadata: metadata
+          })
+
+        from(a in Account, where: a.id == ^account_id)
+        |> Repo.update_all(
+          set: [
+            balance_micro_usd: new_balance,
+            updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+          ]
+        )
+
+        {:created, entry}
+    end
+  end
+
+  # Same transaction, but the caller is told whether the row was created now or already existed.
+  # `grant_trial/1` needs that distinction and must not infer it from a timestamp.
+  defp apply_entry_with_status(account_id, kind, delta, idempotency_key, metadata) do
+    case Repo.transaction(fn ->
+           apply_entry_txn(account_id, kind, delta, idempotency_key, metadata)
+         end) do
+      {:ok, {status, entry}} -> {:ok, status, entry}
       {:error, reason} -> {:error, reason}
     end
   end

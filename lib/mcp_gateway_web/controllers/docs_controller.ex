@@ -12,6 +12,7 @@ defmodule McpGatewayWeb.DocsController do
 
   alias McpGateway.Docs
   alias McpGateway.Landing
+  alias McpGateway.TryPage
   alias McpGateway.Settings
 
   @plain "text/plain"
@@ -23,6 +24,12 @@ defmodule McpGatewayWeb.DocsController do
     conn
     |> put_resp_content_type("text/html")
     |> send_resp(200, Landing.html())
+  end
+
+  def try_page(conn, _params) do
+    conn
+    |> put_resp_content_type("text/html")
+    |> send_resp(200, TryPage.html())
   end
 
   def sitemap(conn, _params) do

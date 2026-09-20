@@ -26,6 +26,16 @@ config :mcp_gateway,
   catalog_dir: "catalog/servers",
   # Rate limit applied to every account, as {requests, window_ms}.
   account_rate_limit: {600, 60_000},
+  # Free trial credit granted once per account, in micro-USD. At 100 micro-USD per call,
+  # 10_000_000 is 100,000 calls -- generous enough that upstream quotas, not the balance, are
+  # the binding constraint. Granting is idempotent per account; see `Billing.grant_trial/1`.
+  trial_credit_micro_usd: 10_000_000,
+  # Self-serve signup. Disabled by default: an open endpoint that mints $10 of credit with no
+  # verification is farmable in a loop, so it is switched on deliberately, per environment.
+  signup_enabled: false,
+  # Signups allowed per client address, as {count, window_ms}. A speed bump, not a defence:
+  # only verification makes trial farming actually hard.
+  signup_rate_limit: {3, 86_400_000},
   # Browser Origins allowed to call /mcp (the endpoint's own origin is always allowed).
   allowed_origins: [],
   # Upstream MCP servers: only these launchers may be spawned for stdio upstreams.

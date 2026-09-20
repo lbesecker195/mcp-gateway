@@ -31,6 +31,10 @@ config :mcp_gateway,
 
 # Each live stdio upstream holds a Node or Python subprocess until it goes idle. On a shared
 # host that memory matters more than cold-start latency, so it is tunable per deployment.
+# Self-serve signup mints real credit with no verification, so it is opt-in per deployment.
+config :mcp_gateway,
+  signup_enabled: System.get_env("SIGNUP_ENABLED") == "true"
+
 config :mcp_gateway,
   upstream_idle_timeout_ms:
     String.to_integer(System.get_env("UPSTREAM_IDLE_TIMEOUT_MS", "600000"))

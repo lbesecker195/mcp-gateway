@@ -140,6 +140,30 @@ defmodule McpGateway.Catalog do
     )
   end
 
+  @doc """
+  A server's upstream allowance in requests per minute, or `nil` when none is published.
+
+  Used to order what we put in front of people: a provider with little headroom should not be
+  the first thing a visitor clicks, because its rate limit is part of the terms that let us
+  proxy it at all.
+  """
+  def requests_per_minute(%Server{rate_limit: %{"requests" => n, "window_ms" => w}})
+      when is_integer(n) and is_integer(w) and w > 0,
+      do: n * 60_000 / w
+
+  def requests_per_minute(%Server{}), do: nil
+
+  @doc """
+  Servable servers ordered by upstream capacity, most first, then by name.
+
+  This is a presentation order only. The registry API keeps its own name ordering, because its
+  cursor pagination depends on it.
+  """
+  def list_servers_by_capacity do
+    list_servers_with_tools()
+    |> Enum.sort_by(fn s -> {-(requests_per_minute(s) || 0), s.name} end)
+  end
+
   @doc "A server's published search keywords."
   def keywords(%Server{docs: %{"keywords" => keywords}}) when is_list(keywords), do: keywords
   def keywords(%Server{}), do: []
