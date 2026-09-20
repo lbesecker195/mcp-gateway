@@ -11,10 +11,27 @@ defmodule McpGatewayWeb.DocsController do
   use McpGatewayWeb, :controller
 
   alias McpGateway.Docs
+  alias McpGateway.Landing
   alias McpGateway.Settings
 
   @plain "text/plain"
   @markdown "text/markdown"
+
+  # The landing page is the only HTML here. It answers "what is an MCP gateway" for people and
+  # search engines; agents are pointed at llms.txt and agent.txt from it.
+  def index(conn, _params) do
+    conn
+    |> put_resp_content_type("text/html")
+    |> send_resp(200, Landing.html())
+  end
+
+  def sitemap(conn, _params) do
+    conn
+    |> put_resp_content_type("application/xml")
+    |> send_resp(200, Landing.sitemap_xml())
+  end
+
+  def robots(conn, _params), do: send_text(conn, Landing.robots_txt())
 
   def llms(conn, _params), do: send_text(conn, Docs.llms_txt())
   def llms_full(conn, _params), do: send_text(conn, Docs.llms_full_txt())
