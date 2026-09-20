@@ -42,6 +42,10 @@ defmodule McpGatewayWeb.Router do
   scope "/", McpGatewayWeb do
     pipe_through :public_docs
 
+    # The landing page: what an MCP gateway is, what this one costs, and what is in it.
+    get "/", DocsController, :index
+    get "/sitemap.xml", DocsController, :sitemap
+    get "/robots.txt", DocsController, :robots
     get "/llms.txt", DocsController, :llms
     get "/llms-full.txt", DocsController, :llms_full
     get "/agent.txt", DocsController, :agent
