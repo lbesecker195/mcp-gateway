@@ -1,14 +1,14 @@
 defmodule McpGatewayWeb.TrialController do
   @moduledoc """
-  The free trial and the public `/try` demo.
+  Free trial signup.
 
-  Both spend real money, so both are rate limited per client address. Neither is a substitute
-  for verification: see the note on `signup/2`.
+  This mints real spendable credit, so it is rate limited per client address. That is a speed
+  bump and not a substitute for verification: see the note on `signup/2`.
   """
 
   use McpGatewayWeb, :controller
 
-  alias McpGateway.{Billing, Demo, RateLimiter, Settings}
+  alias McpGateway.{Billing, RateLimiter, Settings}
 
   @doc """
   Creates an account, grants the one-off trial credit and returns the API key once.
@@ -26,7 +26,7 @@ defmodule McpGatewayWeb.TrialController do
       not Settings.get(:signup_enabled) ->
         error(conn, 404, "signup_disabled", "Self-serve signup is not enabled on this gateway.")
 
-      rate_limited?(conn, :signup) ->
+      rate_limited?(conn) ->
         error(conn, 429, "rate_limited", "Too many signups from this address. Try again later.")
 
       true ->
@@ -60,67 +60,13 @@ defmodule McpGatewayWeb.TrialController do
     end
   end
 
-  @doc """
-  Runs one whitelisted demo example through the real gateway, billed to the gateway's own
-  demo account. See `McpGateway.Demo` for why only fixed examples can be run.
-  """
-  def try_call(conn, params) do
-    if rate_limited?(conn, :demo) do
-      error(
-        conn,
-        429,
-        "rate_limited",
-        "The demo allows a few calls per address per hour. Get your own free credit to keep going."
-      )
-    else
-      run_demo(conn, params["example"], params["query"])
-    end
-  end
+  defp rate_limited?(conn) do
+    {limit, window} = Settings.get(:signup_rate_limit)
 
-  defp run_demo(conn, id, query) when is_binary(id) do
-    case Demo.run(id, query) do
-      {:ok, outcome} ->
-        json(conn, %{
-          "ok" => true,
-          "tool" => outcome.tool,
-          "arguments" => outcome.arguments,
-          "chargedMicroUsd" => outcome.charged_micro_usd,
-          "chargedUsd" => Billing.format_usd(outcome.charged_micro_usd),
-          "callId" => outcome.call_id,
-          "text" => extract_text(outcome.result),
-          "isError" => outcome.result["isError"] == true
-        })
-
-      {:error, reason} ->
-        json(conn, %{"ok" => false, "message" => Demo.explain(reason)})
-    end
-  end
-
-  defp run_demo(conn, _id, _query),
-    do: error(conn, 400, "bad_request", "Name one of the demo examples.")
-
-  # The demo shows the text an agent would see. Non-text content blocks are summarised rather
-  # than dumped, so a base64 image never lands in the page.
-  defp extract_text(result) do
-    (result["content"] || [])
-    |> Enum.map(fn
-      %{"type" => "text", "text" => text} -> text
-      %{"type" => type} -> "[#{type} content]"
-      _ -> nil
-    end)
-    |> Enum.reject(&is_nil/1)
-    |> Enum.join("\n\n")
-    |> String.slice(0, 4000)
-  end
-
-  defp rate_limited?(conn, kind) do
-    {limit, window} =
-      case kind do
-        :signup -> Settings.get(:signup_rate_limit)
-        :demo -> {12, 3_600_000}
-      end
-
-    match?({:error, :rate_limited, _}, RateLimiter.check({kind, client_ip(conn)}, limit, window))
+    match?(
+      {:error, :rate_limited, _},
+      RateLimiter.check({:signup, client_ip(conn)}, limit, window)
+    )
   end
 
   # Behind nginx the peer is the proxy, so prefer the forwarded address. It is client-supplied

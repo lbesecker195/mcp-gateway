@@ -31,12 +31,11 @@ defmodule McpGatewayWeb.Router do
 
   # Read-only MCP Registry API. Publishing is deliberately not exposed: entries enter the
   # catalog only through the compliance gate.
-  # Free trial and the public demo. Both spend real credit and are rate limited per address.
+  # Free trial signup. Mints real credit, so it is rate limited per address.
   scope "/", McpGatewayWeb do
     pipe_through :registry
 
     post "/v1/signup", TrialController, :signup
-    post "/try/call", TrialController, :try_call
   end
 
   scope "/v0.1", McpGatewayWeb do

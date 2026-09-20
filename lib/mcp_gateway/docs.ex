@@ -152,6 +152,25 @@ defmodule McpGateway.Docs do
       "   a lost key cannot be recovered, only replaced.",
       "   The documentation and registry URLs in section 12 need no key at all.",
       "",
+      "   HOW TO GET A KEY",
+      "   If you do not have one, create an account and claim the free trial in one request:",
+      "",
+      "     POST #{base}/v1/signup",
+      "     Content-Type: application/json",
+      "     {\"name\": \"a label for this account\"}",
+      "",
+      "   The response carries the key and the credit:",
+      "     {",
+      "       \"apiKey\": \"mcpg_...\",",
+      "       \"creditUsd\": \"#{usd_plain(trial_credit())}\",",
+      "       \"callsIncluded\": #{trial_calls()},",
+      "       \"endpoint\": \"#{base}/mcp\"",
+      "     }",
+      "",
+      "   The key is returned once and never again: only its hash is stored. Save it before you",
+      "   make another request. No card, no subscription, and the credit is ordinary balance -",
+      "   it is spent by the same #{price_usd()} per call as anything else.",
+      "",
       "4. WHAT IS FREE AND WHAT IS CHARGED",
       "   FREE, never billed: #{Enum.join(pricing["freeOperations"], ", ")}.",
       "   FREE and unauthenticated: llms.txt, llms-full.txt, agent.txt, skill.txt, server.json and",
@@ -1057,6 +1076,10 @@ defmodule McpGateway.Docs do
   defp unit(n, word), do: "#{n} #{word}s"
 
   ## ---------------------------------------------------------------------- money
+
+  defp trial_credit, do: Settings.trial_credit_micro_usd()
+  defp trial_calls, do: div(trial_credit(), Settings.price_micro_usd())
+  defp usd_plain(micro), do: Billing.format_usd(micro)
 
   defp price_micro, do: Settings.price_micro_usd()
   defp price_usd, do: usd(price_micro())
