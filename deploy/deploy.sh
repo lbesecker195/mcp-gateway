@@ -182,17 +182,32 @@ echo "  uploaded to $BASE/tmp/src"
 say "Building release $RELEASE on the host"
 remote RELEASE="$RELEASE" PORT="$PORT" bash -euo pipefail -s <<'BUILD_EOF'
   APP_USER=mcp_gateway; BASE=/opt/mcp-gateway
-  chown -R "$APP_USER:$APP_USER" "$BASE/tmp/src"
+  chown -R "$APP_USER:$APP_USER" "$BASE/tmp/src" </dev/null
 
-  sudo -u "$APP_USER" -H bash -euo pipefail <<BUILDER
-    export MIX_ENV=prod HOME=/home/$APP_USER
-    cd $BASE/tmp/src
-    mix local.hex --force --if-missing >/dev/null 2>&1 || mix local.hex --force >/dev/null
-    mix local.rebar --force >/dev/null
+  # Build via `bash -c`, never a nested heredoc. A heredoc inside a script that is itself
+  # being fed to `bash -s` over stdin competes for that stdin: the body silently does not
+  # run and the block still exits 0, which once reported a successful deploy that had built
+  # nothing at all.
+  # </dev/null on every child is load-bearing, not tidiness. This script arrives on ssh's
+  # stdin; a child that inherits that stdin consumes the script text still queued behind it,
+  # so the rest of the block silently never runs and the block still exits 0 -- which once
+  # reported a successful deploy that had built nothing at all.
+  sudo -u "$APP_USER" -H env MIX_ENV=prod HOME="/home/$APP_USER" bash -c "
+    set -euo pipefail
+    cd '$BASE/tmp/src'
+    mix local.hex --force >/dev/null 2>&1
+    mix local.rebar --force >/dev/null 2>&1
     mix deps.get --only prod >/dev/null
     mix compile >/dev/null
-    mix release --overwrite --path "$BASE/releases/$RELEASE" >/dev/null
-BUILDER
+    mix release --overwrite --path '$BASE/releases/$RELEASE' >/dev/null
+  " </dev/null
+
+  # Trust nothing: a release that reported success but produced no runnable artifact is
+  # exactly the failure this check exists to catch.
+  if [ ! -x "$BASE/releases/$RELEASE/bin/server" ] || [ ! -x "$BASE/releases/$RELEASE/bin/migrate" ]; then
+    echo "  build produced no runnable release at $BASE/releases/$RELEASE" >&2
+    exit 1
+  fi
   echo "  built $BASE/releases/$RELEASE"
 
   previous=""
@@ -205,8 +220,10 @@ BUILDER
   chown -h "$APP_USER:$APP_USER" "$BASE/current"
   echo "  current -> $RELEASE"
 
-  systemctl enable mcp-gateway >/dev/null 2>&1 || true
-  systemctl restart mcp-gateway
+  systemctl enable mcp-gateway >/dev/null 2>&1 </dev/null || true
+  # Do not let a failed start abort this block: the verify step below needs to run so it can
+  # roll back and print the journal.
+  systemctl restart mcp-gateway </dev/null || echo "  systemctl restart reported failure; verify step will decide"
 BUILD_EOF
 
 # ---------------------------------------------------------------- verify
@@ -244,7 +261,10 @@ remote bash -euo pipefail -s <<'SYNC_EOF'
   # and fight the live one for the port.
   /opt/mcp-gateway/current/bin/mcp_gateway rpc '
     case McpGateway.Catalog.Sync.sync_all([]) do
-      {:ok, r} -> IO.puts("  imported=#{r.imported} updated=#{r.updated} delisted=#{r.delisted} skipped=#{r.skipped} failed=#{r.failed}")
+      {:ok, r} ->
+        c = r.counts
+        IO.puts("  imported=#{c.imported} updated=#{c.updated} delisted=#{c.delisted} skipped=#{c.skipped} failed=#{c.failed}")
+        for {path, reason} <- r.failed, do: IO.puts("  failed: #{Path.basename(path)} -- #{McpGateway.Catalog.Sync.explain(reason)}")
       {:error, e} -> IO.puts("  catalog sync error: #{inspect(e)}")
     end' 2>&1 | tail -22 | sed 's/^/  /'
   exit 0
