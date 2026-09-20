@@ -1,25 +1,27 @@
 defmodule McpGateway.TryPage do
   @moduledoc """
-  The `/try` page: a chat-styled demo that makes real, billed calls through the real gateway.
+  The `/try` page: how to add this gateway to an AI agent, and what you say to it afterwards.
 
-  It is deliberately a *guided* demo, and says so on the page. The example questions map to
-  fixed tool calls rather than being interpreted by a language model, because pretending an LLM
-  were choosing the tool would misrepresent what the visitor is seeing. What is real is the
-  part that matters: the call goes through the same metering, the same compliance gate and the
-  same upstream as a paying customer's, and the page shows the actual charge.
+  The point of the page is that setup is the only technical step. Once the gateway is
+  connected, the agent discovers the tools itself and the user goes back to typing ordinary
+  sentences — so the page leads with the conversation and treats the config as the footnote it
+  should be.
 
-  The credit is the gateway's own, bounded to a daily budget by `McpGateway.Demo`.
+  Every snippet below was checked against that client's own official documentation, and the
+  per-client warnings are the ones that actually bite: the field names differ between clients
+  (`servers` vs `mcpServers`, `url` vs `serverUrl`, `type` vs `transport`), and a plausible
+  snippet with the wrong one fails in a way that looks like our gateway is broken.
+
+  The transcripts are illustrative and say so. They are not recordings, and nothing on this
+  page makes a live call.
   """
 
-  alias McpGateway.{Billing, Demo, Settings}
+  alias McpGateway.{Billing, Settings}
 
   def html do
     base = Settings.canonical_base_url()
     price = Billing.format_usd(Settings.price_micro_usd())
     credit = Settings.trial_credit_micro_usd()
-    credit_usd = Billing.format_usd(credit)
-    calls = credit |> div(Settings.price_micro_usd()) |> delimit()
-    examples = Demo.examples()
 
     """
     <!DOCTYPE html>
@@ -27,77 +29,27 @@ defmodule McpGateway.TryPage do
     <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Try the MCP Gateway — a live tool call in your browser</title>
-    <meta name="description" content="Run a real Model Context Protocol tool call in your browser, see what it returns and what it costs, then get $#{credit_usd} of free credit.">
+    <title>Set up the MCP Gateway in Claude, Cursor, VS Code and more</title>
+    <meta name="description" content="Add one Model Context Protocol endpoint to Claude Code, Claude Desktop, Cursor, VS Code, Windsurf or the OpenAI Agents SDK, then just ask your agent in plain language.">
     <link rel="canonical" href="#{base}/try">
-    <meta property="og:title" content="Try the MCP Gateway">
-    <meta property="og:description" content="Run a live MCP tool call in your browser and see exactly what it costs.">
+    <meta property="og:title" content="Set up the MCP Gateway in your AI agent">
+    <meta property="og:description" content="One endpoint, six clients, then plain language. Verified setup for each.">
     <style>#{css()}</style>
     </head>
     <body>
     <main>
       <p class="back"><a href="/">&larr; MCP Gateway</a></p>
-      <h1>Try it</h1>
-      <p class="lede">Pick a question. It runs a real tool call through this gateway &mdash; same
-      metering, same providers, same #{esc(price)} per call as a paying client &mdash; and shows
-      you exactly what came back and what it cost.</p>
+      <h1>Add it to your agent, then just ask</h1>
+      <p class="lede">Connecting the gateway is one config change. After that your agent
+      discovers #{tool_phrase()} by itself and you go back to typing ordinary sentences.</p>
 
-      <section class="chat" id="chat" aria-live="polite">
-        <div class="msg bot">
-          <p>Ask me something. I'll call a real provider and show you the bill.</p>
-        </div>
-      </section>
-
-      #{if examples == [], do: unavailable(), else: composer(examples)}
-
-      <p class="disclosure">A guided demo: each question maps to a fixed tool call rather than
-      being interpreted by a language model. The call itself is real and really billed &mdash; to
-      our account, not yours.</p>
-
-      <section id="get-started">
-        <h2>Get started in three steps</h2>
-        <p>You get <strong>$#{credit_usd} of free credit</strong> &mdash; #{calls} tool calls &mdash;
-        with no card and no subscription.</p>
-        <ol class="steps">
-          <li>
-            <h3>1. Get a key</h3>
-            <pre><code>curl -X POST #{base}/v1/signup</code></pre>
-            <p>Returns an API key and your free credit. The key is shown once.</p>
-          </li>
-          <li>
-            <h3>2. Point your client at the gateway</h3>
-            <pre><code>{
-      "mcpServers": {
-        "gateway": {
-          "type": "streamable-http",
-          "url": "#{base}/mcp",
-          "headers": { "Authorization": "Bearer YOUR_KEY" }
-        }
-      }
-    }</code></pre>
-            <p>Any MCP client works. Use <code>#{base}/mcp/&lt;server&gt;</code> for one provider.</p>
-          </li>
-          <li>
-            <h3>3. Call a tool</h3>
-            <pre><code>curl -X POST #{base}/mcp \\
-      -H "Authorization: Bearer YOUR_KEY" \\
-      -H "Content-Type: application/json" \\
-      -H "MCP-Protocol-Version: 2026-07-28" \\
-      -H "Mcp-Method: tools/list" \\
-      -d '{"jsonrpc":"2.0","id":1,"method":"tools/list",
-           "params":{"_meta":{
-             "io.modelcontextprotocol/protocolVersion":"2026-07-28",
-             "io.modelcontextprotocol/clientCapabilities":{}}}}'</code></pre>
-            <p>Listing tools is free. You are charged #{esc(price)} only when a
-            <code>tools/call</code> reaches a provider and returns a result.</p>
-          </li>
-        </ol>
-        <p><a class="btn" href="/agent.txt">Read agent.txt</a>
-        <a class="btn secondary" href="/llms.txt">Browse every tool</a></p>
-      </section>
+      #{chat_section(base)}
+      #{setup_section(base)}
+      #{after_section(price, credit)}
     </main>
     <footer>
-      <p><a href="/">Home</a> &middot; <a href="/v0.1/servers">Catalog API</a> &middot;
+      <p><a href="/">Home</a> &middot; <a href="/agent.txt">agent.txt</a> &middot;
+      <a href="/llms.txt">Every tool</a> &middot;
       <a href="https://github.com/lbesecker195/mcp-gateway">Source</a></p>
     </footer>
     <script>#{js()}</script>
@@ -106,165 +58,331 @@ defmodule McpGateway.TryPage do
     """
   end
 
-  defp composer(examples) do
-    chips =
-      Enum.map_join(examples, "\n", fn ex ->
-        ~s(<button class="chip" data-example="#{esc(ex.id)}" data-editable="#{esc(ex.editable)}") <>
-          ~s( data-default="#{esc(ex.args[ex.editable])}">#{esc(ex.question)}</button>)
+  defp tool_phrase do
+    case McpGateway.Catalog.list_servers_with_tools() do
+      [] -> "the catalog"
+      servers -> "#{servers |> Enum.map(&length(&1.tools)) |> Enum.sum()} tools"
+    end
+  end
+
+  ## ------------------------------------------------------------------ the conversation
+
+  defp chat_section(base) do
+    """
+    <section id="conversation">
+      <h2>What it looks like</h2>
+      <p>Two things people actually type once the gateway is connected. The first has the agent
+      onboard itself: <a href="/agent.txt">agent.txt</a> documents the signup call, so the agent
+      can read it and claim the free credit without you leaving the chat.</p>
+
+      <div class="chat">
+        <div class="msg user">Read #{base}/agent.txt and sign up for the free trial.</div>
+        <div class="msg bot">
+          <p>Reading <code>agent.txt</code>&hellip; it documents a signup endpoint.</p>
+          <p class="act">POST #{base}/v1/signup</p>
+          <p>Done. You have <strong>$10.00 of credit</strong>, about 100,000 tool calls. I have
+          saved the key. Discovery is free; each tool call costs $0.0001.</p>
+        </div>
+
+        <div class="msg user">What does the express package depend on?</div>
+        <div class="msg bot">
+          <p class="act">npm_registry__npm_deps &nbsp;<span class="cost">$0.0001</span></p>
+          <p>express v5.2.1 has 28 dependencies, including <code>qs</code>, <code>send</code>,
+          <code>cookie</code>, <code>debug</code> and <code>etag</code>.</p>
+        </div>
+
+        <div class="msg user">Find recent research on the Model Context Protocol.</div>
+        <div class="msg bot">
+          <p class="act">openalex__openalex_search_entities &nbsp;<span class="cost">$0.0001</span></p>
+          <p>2,600,858 works match. The most cited recent one is <em>Model Context Protocol
+          (MCP): Landscape, Security Threats, and Future Research Directions</em> (2026).</p>
+        </div>
+      </div>
+      <p class="disclosure">Illustrative, not a recording. Your agent picks the tool; the gateway
+      routes it and bills the call.</p>
+    </section>
+    """
+  end
+
+  ## ------------------------------------------------------------------ setup
+
+  defp setup_section(base) do
+    clients = clients(base)
+
+    tabs =
+      Enum.map_join(Enum.with_index(clients), "\n", fn {c, i} ->
+        ~s(<button class="tab#{if i == 0, do: " on"}" data-tab="#{c.id}">#{esc(c.name)}</button>)
+      end)
+
+    panels =
+      Enum.map_join(Enum.with_index(clients), "\n", fn {c, i} ->
+        """
+        <div class="panel#{if i == 0, do: " on"}" id="panel-#{c.id}">
+          <p class="where">#{c.where}</p>
+          <pre><code>#{esc(c.snippet)}</code></pre>
+          #{if c.warning, do: ~s(<p class="warn"><strong>Watch out:</strong> #{c.warning}</p>), else: ""}
+          <p class="src">Verified against <a href="#{c.source}" rel="nofollow noopener">#{esc(c.source_label)}</a>.</p>
+        </div>
+        """
       end)
 
     """
-    <div class="composer">
-      <p class="hint">Pick one:</p>
-      <div class="chips">#{chips}</div>
-      <div class="editrow" id="editrow" hidden>
-        <input id="query" type="text" maxlength="120" autocomplete="off"
-               aria-label="Search terms for this call">
-        <button id="send" class="btn">Run it</button>
-      </div>
-    </div>
+    <section id="setup">
+      <h2>Setup, once</h2>
+      <p>Replace <code>YOUR_KEY</code> with your API key. Field names differ between clients
+      &mdash; <code>servers</code> against <code>mcpServers</code>, <code>url</code> against
+      <code>serverUrl</code> &mdash; and the wrong one fails in a way that looks like the gateway
+      is down, so each snippet below is the one that client's own docs specify.</p>
+      <div class="tabs">#{tabs}</div>
+      #{panels}
+    </section>
     """
   end
 
-  defp unavailable do
+  defp clients(base) do
+    url = "#{base}/mcp"
+
+    [
+      %{
+        id: "claude-code",
+        name: "Claude Code",
+        where: "Run this in your terminal. No file to edit.",
+        snippet: """
+        claude mcp add --transport http --scope user mcpharbor \\
+          #{url} \\
+          --header "Authorization: Bearer YOUR_KEY"
+
+        claude mcp list          # confirm it connected
+        """,
+        warning:
+          "This puts your key in shell history. To avoid that, add it to a project " <>
+            "<code>.mcp.json</code> instead and reference an environment variable: the JSON field " <>
+            "is <code>\"type\": \"http\"</code>, not <code>transport</code>, and an entry with a " <>
+            "<code>url</code> but no <code>type</code> is read as a stdio server and skipped.",
+        source: "https://code.claude.com/docs/en/mcp",
+        source_label: "Claude Code MCP docs"
+      },
+      %{
+        id: "claude-desktop",
+        name: "Claude Desktop",
+        where: "Settings → Connectors → Add custom connector.",
+        snippet: """
+        Name:            MCP Harbor
+        MCP server URL:  #{url}
+        Authentication:  No sign-in
+        Request headers:
+          authorization  ->  Bearer YOUR_KEY
+        """,
+        warning:
+          "Choose <strong>No sign-in</strong>; on an OAuth connection Claude owns the " <>
+            "Authorization header and you cannot set it. Type the word <code>Bearer</code> and a " <>
+            "space before your key &mdash; the value is sent verbatim. Authentication cannot be " <>
+            "edited after the connector is added, so rotating the key means removing and re-adding " <>
+            "it. If your dialog has no <em>Request headers</em> section, your organization does not " <>
+            "have that beta yet; use the <code>mcp-remote</code> bridge instead.",
+        source: "https://claude.com/docs/connectors/custom/remote-mcp",
+        source_label: "Anthropic custom connector docs"
+      },
+      %{
+        id: "cursor",
+        name: "Cursor",
+        where: "~/.cursor/mcp.json for every project, or .cursor/mcp.json for one.",
+        snippet: """
+        {
+          "mcpServers": {
+            "mcpharbor": {
+              "url": "#{url}",
+              "headers": {
+                "Authorization": "Bearer YOUR_KEY"
+              }
+            }
+          }
+        }
+        """,
+        warning: nil,
+        source: "https://cursor.com/docs/context/mcp",
+        source_label: "Cursor MCP docs"
+      },
+      %{
+        id: "vscode",
+        name: "VS Code",
+        where:
+          ".vscode/mcp.json in your project. VS Code prompts for the key and stores it securely.",
+        snippet: """
+        {
+          "inputs": [
+            {
+              "type": "promptString",
+              "id": "mcpharbor-key",
+              "description": "MCP Harbor API key",
+              "password": true
+            }
+          ],
+          "servers": {
+            "mcpharbor": {
+              "type": "http",
+              "url": "#{url}",
+              "headers": {
+                "Authorization": "Bearer ${input:mcpharbor-key}"
+              }
+            }
+          }
+        }
+        """,
+        warning:
+          "The top-level key is <code>servers</code>, not <code>mcpServers</code> as in most " <>
+            "other clients. Use the Start action VS Code shows above the entry, then ask in Copilot " <>
+            "Chat in Agent mode. Do not add comments &mdash; this file is plain JSON.",
+        source: "https://code.visualstudio.com/docs/agents/reference/mcp-configuration",
+        source_label: "VS Code MCP configuration"
+      },
+      %{
+        id: "windsurf",
+        name: "Windsurf",
+        where: "~/.codeium/windsurf/mcp_config.json",
+        snippet: """
+        {
+          "mcpServers": {
+            "mcpharbor": {
+              "serverUrl": "#{url}",
+              "headers": {
+                "Authorization": "Bearer YOUR_KEY"
+              }
+            }
+          }
+        }
+        """,
+        warning:
+          "The field is <code>serverUrl</code> here, not <code>url</code>. Cascade also caps " <>
+            "itself at 100 tools in total, so a large gateway catalogue can crowd out your other " <>
+            "servers &mdash; that shows up as tools quietly missing rather than as an error.",
+        source: "https://docs.devin.ai/desktop/cascade/mcp",
+        source_label:
+          "Cascade MCP docs (published under Devin Desktop since the Windsurf rebrand)"
+      },
+      %{
+        id: "openai",
+        name: "OpenAI Agents SDK",
+        where: "Python. pip install openai-agents",
+        snippet: """
+        import asyncio, os
+        from agents import Agent, Runner
+        from agents.mcp import MCPServerStreamableHttp
+
+        async def main():
+            async with MCPServerStreamableHttp(
+                name="MCP Harbor",
+                params={
+                    "url": "#{url}",
+                    "headers": {"Authorization": f"Bearer {os.environ['MCPHARBOR_API_KEY']}"},
+                    "timeout": 30,
+                },
+            ) as server:
+                agent = Agent(name="Assistant", mcp_servers=[server])
+                result = await Runner.run(agent, "What does the express package depend on?")
+                print(result.final_output)
+
+        asyncio.run(main())
+        """,
+        warning:
+          "Two keys are needed: <code>MCPHARBOR_API_KEY</code> for the gateway and " <>
+            "<code>OPENAI_API_KEY</code> for the model running the agent. Setting only the first " <>
+            "gives an authentication error from OpenAI, which looks like our problem but is not. " <>
+            "Use <code>MCPServerStreamableHttp</code>, not <code>MCPServerSse</code>.",
+        source: "https://openai.github.io/openai-agents-python/mcp/",
+        source_label: "OpenAI Agents SDK MCP docs"
+      }
+    ]
+  end
+
+  ## ------------------------------------------------------------------ after
+
+  defp after_section(price, credit) do
     """
-    <div class="composer">
-      <p class="hint">The demo providers are not routable at the moment. The
-      <a href="/v0.1/servers">catalog</a> shows what is live.</p>
-    </div>
+    <section id="after">
+      <h2>Then what</h2>
+      <ul class="plain">
+        <li><strong>Ask in plain language.</strong> Your agent reads the tool list and picks for
+        itself. You never name a tool.</li>
+        <li><strong>Discovery is free.</strong> Listing tools, reading the docs and querying the
+        registry never cost anything. Only a tool call that reaches a provider is billed, at
+        #{esc("$" <> price)}.</li>
+        <li><strong>You start with $#{Billing.format_usd(credit)} of credit</strong> &mdash;
+        about #{delimit(div(credit, Settings.price_micro_usd()))} calls. No card.</li>
+        <li><strong>A failed call is refunded</strong> automatically, inside the same request.</li>
+      </ul>
+      <p class="warn">If a client reports the server as unauthorized, check the key has no
+      trailing whitespace and that <code>Bearer</code> precedes it. This gateway uses a static
+      bearer token and does not use OAuth, so any prompt to sign in means the header is not
+      reaching us.</p>
+      <p><a class="btn" href="/agent.txt">Read agent.txt</a>
+      <a class="btn secondary" href="/llms.txt">Browse every tool</a></p>
+    </section>
     """
   end
+
+  ## ------------------------------------------------------------------ assets
 
   defp js do
     """
-    (function () {
-      var chat = document.getElementById('chat');
-      var editrow = document.getElementById('editrow');
-      var input = document.getElementById('query');
-      var send = document.getElementById('send');
-      var current = null;
-      var busy = false;
-
-      function el(cls, html) {
-        var d = document.createElement('div');
-        d.className = cls;
-        d.innerHTML = html;
-        chat.appendChild(d);
-        chat.scrollTop = chat.scrollHeight;
-        return d;
-      }
-      function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, function (c) {
-          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-        });
-      }
-
-      document.querySelectorAll('.chip').forEach(function (chip) {
-        chip.addEventListener('click', function () {
-          current = chip.dataset.example;
-          document.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('on'); });
-          chip.classList.add('on');
-          if (chip.dataset.editable && chip.dataset.editable !== '') {
-            editrow.hidden = false;
-            input.value = chip.dataset.default || '';
-            input.focus();
-          } else {
-            editrow.hidden = true;
-            run(chip.textContent);
-          }
-        });
+    document.querySelectorAll('.tab').forEach(function (t) {
+      t.addEventListener('click', function () {
+        document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('on'); });
+        document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('on'); });
+        t.classList.add('on');
+        var panel = document.getElementById('panel-' + t.dataset.tab);
+        if (panel) { panel.classList.add('on'); }
       });
-
-      if (send) { send.addEventListener('click', function () { run(input.value); }); }
-      if (input) {
-        input.addEventListener('keydown', function (e) { if (e.key === 'Enter') run(input.value); });
-      }
-
-      function run(label) {
-        if (busy || !current) { return; }
-        busy = true;
-        el('msg user', '<p>' + escapeHtml(label) + '</p>');
-        var thinking = el('msg bot', '<p class="dots">Calling the provider&hellip;</p>');
-
-        fetch('/try/call', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ example: current, query: input ? input.value : null })
-        })
-          .then(function (r) { return r.json(); })
-          .then(function (d) {
-            thinking.remove();
-            if (!d.ok) {
-              el('msg bot error', '<p>' + escapeHtml(d.message || 'That did not work.') + '</p>');
-              return;
-            }
-            var meta =
-              '<p class="callmeta"><code>' + escapeHtml(d.tool) + '</code>' +
-              '<span class="cost">charged $' + escapeHtml(d.chargedUsd) + '</span></p>';
-            el('msg bot', meta + '<pre>' + escapeHtml(d.text || '(no text returned)') + '</pre>');
-          })
-          .catch(function () {
-            thinking.remove();
-            el('msg bot error', '<p>The demo could not be reached.</p>');
-          })
-          .finally(function () { busy = false; });
-      }
-    })();
+    });
     """
   end
 
   defp css do
     """
-    :root{--bg:#fff;--fg:#16181d;--muted:#5b6270;--line:#e3e6ec;--accent:#1c5fd6;--card:#f7f8fa;--ok:#1a7f4b}
+    :root{--bg:#fff;--fg:#16181d;--muted:#5b6270;--line:#e3e6ec;--accent:#1c5fd6;--card:#f7f8fa;--ok:#1a7f4b;--warn:#8a5a00}
     @media(prefers-color-scheme:dark){
-      :root{--bg:#0f1115;--fg:#e8eaee;--muted:#a0a7b4;--line:#262b34;--accent:#7aa7ff;--card:#161a21;--ok:#57c98a}
+      :root{--bg:#0f1115;--fg:#e8eaee;--muted:#a0a7b4;--line:#262b34;--accent:#7aa7ff;--card:#161a21;--ok:#57c98a;--warn:#d9a441}
     }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--fg);
       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-    main,footer{max-width:46rem;margin:0 auto;padding:0 1.25rem}
+    main,footer{max-width:48rem;margin:0 auto;padding:0 1.25rem}
     .back{margin:1.5rem 0 0}.back a{text-decoration:none;color:var(--muted)}
-    h1{font-size:clamp(2rem,5vw,2.6rem);margin:.5rem 0 .5rem;letter-spacing:-.02em}
-    h2{font-size:1.4rem;margin:2.5rem 0 .5rem}
-    h3{font-size:1rem;margin:0 0 .4rem}
-    .lede{color:var(--muted);margin:0 0 1.5rem}
+    h1{font-size:clamp(2rem,5vw,2.6rem);margin:.5rem 0;letter-spacing:-.02em}
+    h2{font-size:1.4rem;margin:2.5rem 0 .6rem}
+    .lede{color:var(--muted);margin:0 0 1.5rem;max-width:36rem}
     a{color:var(--accent)}
-    .chat{background:var(--card);border:1px solid var(--line);border-radius:.75rem;padding:1rem;
-      min-height:11rem;max-height:26rem;overflow-y:auto;display:flex;flex-direction:column;gap:.7rem}
-    .msg{max-width:88%;padding:.6rem .85rem;border-radius:.7rem;font-size:.94rem}
-    .msg p{margin:0}
+    p{max-width:40rem}
+    section{border-top:1px solid var(--line);padding-top:.5rem}
+    .chat{display:flex;flex-direction:column;gap:.7rem;background:var(--card);
+      border:1px solid var(--line);border-radius:.75rem;padding:1rem;margin:1rem 0 .5rem}
+    .msg{max-width:90%;padding:.65rem .9rem;border-radius:.7rem;font-size:.94rem}
+    .msg p{margin:0 0 .4rem;max-width:none}.msg p:last-child{margin-bottom:0}
+    .msg.user{background:var(--accent);color:#fff;align-self:flex-end;font-weight:500}
     .msg.bot{background:var(--bg);border:1px solid var(--line);align-self:flex-start}
-    .msg.user{background:var(--accent);color:#fff;align-self:flex-end}
-    .msg.error{border-color:#c2410c}
-    .msg pre{margin:.5rem 0 0;white-space:pre-wrap;word-break:break-word;font-size:.82rem;
-      max-height:15rem;overflow-y:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-    .callmeta{display:flex;justify-content:space-between;align-items:center;gap:.5rem;
-      font-size:.78rem;color:var(--muted);flex-wrap:wrap}
-    .callmeta code{font-size:.9em}
-    .cost{color:var(--ok);font-weight:650;white-space:nowrap}
-    .dots{color:var(--muted)}
-    .composer{margin:1rem 0 .5rem}
-    .hint{font-size:.85rem;color:var(--muted);margin:0 0 .5rem}
-    .chips{display:flex;flex-wrap:wrap;gap:.5rem}
-    .chip{font:inherit;font-size:.88rem;padding:.45rem .8rem;border-radius:2rem;cursor:pointer;
+    .act{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8rem;
+      color:var(--muted)}
+    .cost{color:var(--ok);font-weight:650}
+    .disclosure{font-size:.82rem;color:var(--muted)}
+    .tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin:1rem 0 .8rem}
+    .tab{font:inherit;font-size:.88rem;padding:.4rem .8rem;border-radius:2rem;cursor:pointer;
       background:var(--bg);color:var(--fg);border:1px solid var(--line)}
-    .chip:hover{border-color:var(--accent)}
-    .chip.on{border-color:var(--accent);color:var(--accent)}
-    .editrow{display:flex;gap:.5rem;margin-top:.7rem}
-    .editrow input{flex:1;font:inherit;padding:.5rem .7rem;border-radius:.5rem;
-      border:1px solid var(--line);background:var(--bg);color:var(--fg)}
-    .btn{display:inline-block;font:inherit;padding:.5rem 1rem;border-radius:.5rem;border:0;
-      background:var(--accent);color:#fff;text-decoration:none;font-weight:600;cursor:pointer}
-    .btn.secondary{background:transparent;color:var(--accent);border:1px solid var(--line)}
-    .disclosure{font-size:.82rem;color:var(--muted);margin:.75rem 0 0}
-    .steps{list-style:none;padding:0;counter-reset:s}
-    .steps li{margin:1.25rem 0;padding:1rem;background:var(--card);border:1px solid var(--line);
-      border-radius:.6rem}
-    .steps p{margin:.5rem 0 0;font-size:.9rem;color:var(--muted)}
-    pre{background:var(--bg);border:1px solid var(--line);border-radius:.5rem;padding:.8rem;
+    .tab:hover{border-color:var(--accent)}
+    .tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .panel{display:none}.panel.on{display:block}
+    .where{font-size:.88rem;color:var(--muted);margin:0 0 .5rem}
+    .warn{font-size:.88rem;background:var(--card);border-left:3px solid var(--warn);
+      padding:.6rem .8rem;border-radius:.3rem;margin:.8rem 0}
+    .src{font-size:.8rem;color:var(--muted)}
+    pre{background:var(--card);border:1px solid var(--line);border-radius:.6rem;padding:.9rem;
       overflow-x:auto;margin:0}
-    pre code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.8rem;line-height:1.5}
+    pre code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem;line-height:1.55}
     code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
+    .msg code,.warn code{background:rgba(127,127,127,.15);padding:.1em .3em;border-radius:.25rem}
+    ul.plain{padding-left:1.1rem}ul.plain li{margin:.45rem 0;max-width:40rem}
+    .btn{display:inline-block;padding:.55rem 1.05rem;border-radius:.5rem;background:var(--accent);
+      color:#fff;text-decoration:none;font-weight:600;margin-right:.4rem}
+    .btn.secondary{background:transparent;color:var(--accent);border:1px solid var(--line)}
     footer{border-top:1px solid var(--line);margin-top:3rem;padding-top:1.25rem;padding-bottom:3rem;
       color:var(--muted);font-size:.9rem}
     """
