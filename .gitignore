@@ -28,3 +28,6 @@ mcp_gateway-*.tar
 
 # Host-specific deploy settings (server address, ports): never published.
 /deploy/deploy.env
+
+# Personal Claude Code overrides (auto-allows the production deploy): never published.
+/.claude/settings.local.json
